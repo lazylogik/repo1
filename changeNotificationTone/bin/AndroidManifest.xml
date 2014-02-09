@@ -45,6 +45,13 @@
 <!--         		<action android:name="android.net.conn.CONNECTIVITY_CHANGE" /> -->
 <!--     		</intent-filter> -->
 <!--         </receiver> -->
+		<receiver android:name=".AutoReceiver" android:enabled="true"> 
+            <intent-filter>
+                <action android:name="com.exmaple.ChangeNotification.MorningTime" /> 
+                <action android:name="com.exmaple.ChangeNotification.NightTime" />
+                <action android:name="android.net.conn.CONNECTIVITY_CHANGE" />
+            </intent-filter> 
+    	</receiver>
     </application>
 
 </manifest>

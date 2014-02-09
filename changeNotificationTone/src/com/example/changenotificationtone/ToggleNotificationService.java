@@ -177,7 +177,6 @@ public class ToggleNotificationService extends IntentService {
 		      synchronized (mSempahore) {
 		              try {	
 		            	  long msSleep = 1000;
-		            	  postNotification("WokeUp");
 		            	  Log.i("ToggleNotificationService","Woke Up");
 		                  timeNow.setToNow();
 		                  timeNight.setToNow();
@@ -260,16 +259,10 @@ public class ToggleNotificationService extends IntentService {
 		                  if(msSleep <= 0)
 		                	  msSleep = 1000;
 		                  
-		                  postNotification(notificationText);
-		                  //if(msSleep > 1800000)
-		                	  //msSleep = 1800000;
-		                  //myTimer.schedule(mMyTimerTask, msSleep);		                  
-		                  //mSempahore.wait(msSleep);
-		                  //handler.postDelayed(mMyTimerTask,1800000);
+		                  postNotification(notificationText);		                  
 		                  m_am.set( AlarmManager.ELAPSED_REALTIME_WAKEUP, SystemClock.elapsedRealtime() + 
 		                		  msSleep, pi );
-		                  mSempahore.wait();
-		                  postNotification("Returned From Sleep");
+		                  mSempahore.wait();		                  
 		                  
 		                  } catch (Exception e) {
 		              }
