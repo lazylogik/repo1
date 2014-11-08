@@ -1,5 +1,9 @@
 package com.example.changenotificationtone;
 
+import java.util.Calendar;
+
+import android.app.AlarmManager;
+import android.app.PendingIntent;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -19,10 +23,55 @@ public class AutoReceiver extends BroadcastReceiver {
 	public AutoReceiver() {
 		wasConnected = false;
 	}
+	
+	private AlarmManager m_am;
+	private PendingIntent morningPi, nightPi;
+	
+	private void startTimers(Context context)
+    {
+		m_am = (AlarmManager)(context.getSystemService( Context.ALARM_SERVICE ));
+        morningPi = PendingIntent.getBroadcast( context, 0, new Intent("com.exmaple.ChangeNotification.MorningTime"),
+     			0 );
+        nightPi = PendingIntent.getBroadcast( context, 0, new Intent("com.exmaple.ChangeNotification.NightTime"),
+     			0 );
+    	SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(context);
+    	String timeNightString = sharedPref.getString("NightTime", "");
+		String timeMorningString = sharedPref.getString("MorningTime", "");
+		int morningHour = 0, morningMin = 0, nightHour = 0, nightMin = 0;
+		try{
+			morningHour = TimePreference.getHour(timeMorningString);
+			morningMin = TimePreference.getMinute(timeMorningString);
+			nightHour = TimePreference.getHour(timeNightString);
+			nightMin = TimePreference.getMinute(timeNightString);
+		}
+		catch(Exception e)
+		{
+			
+		}
+		if(morningHour != 0 || morningMin != 0 || nightHour != 0 || nightMin != 0)
+		{
+			m_am.cancel(morningPi);
+			m_am.cancel(nightPi);
+			Calendar morningCalendar = Calendar.getInstance();
+			Calendar nightCalendar = Calendar.getInstance();
+			morningCalendar.setTimeInMillis(System.currentTimeMillis());			
+			morningCalendar.set(Calendar.HOUR_OF_DAY, morningHour);
+			morningCalendar.set(Calendar.MINUTE, morningMin);
+			nightCalendar.setTimeInMillis(System.currentTimeMillis());
+			nightCalendar.set(Calendar.HOUR_OF_DAY, nightHour);
+			nightCalendar.set(Calendar.MINUTE, nightMin);
+			m_am.setInexactRepeating(AlarmManager.RTC_WAKEUP, nightCalendar.getTimeInMillis(), AlarmManager.INTERVAL_DAY, nightPi);
+			m_am.setInexactRepeating(AlarmManager.RTC_WAKEUP, morningCalendar.getTimeInMillis(), AlarmManager.INTERVAL_DAY, morningPi);
+			
+		}
+    }
 
 	@Override
 	public void onReceive(Context context, Intent intent) {
 		String action = intent.getAction();
+		if (action.equals(Intent.ACTION_BOOT_COMPLETED) || action == "com.exmaple.ChangeNotification.StartTimers"){
+			startTimers(context);
+		}
 		if(action == ConnectivityManager.CONNECTIVITY_ACTION)
 		{
 			WifiManager wifiManager = (WifiManager)context.getSystemService(Context.WIFI_SERVICE);
@@ -54,6 +103,7 @@ public class AutoReceiver extends BroadcastReceiver {
 				    // All objects are from android.context.Context
 				    SharedPreferences.Editor editor = sharedPref.edit();
 				    editor.putBoolean("silentMode", false);
+				    editor.commit();
 				}	
 				
 				

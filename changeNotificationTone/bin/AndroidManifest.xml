@@ -10,6 +10,7 @@
 
     <uses-permission android:name="android.permission.WRITE_SETTINGS" />
     <uses-permission android:name="android.permission.ACCESS_WIFI_STATE"/>
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED"/>
                                                             
 
     <application
@@ -31,11 +32,6 @@
             android:label="@string/title_activity_settings" >
         </activity>
 
-        <service
-            android:name="com.example.changenotificationtone.ToggleNotificationService"
-            android:enabled="true"
-            android:exported="true" >
-        </service>
 
 <!--         <receiver -->
 <!--             android:name="com.example.changenotificationtone.AutoReceiver" -->
@@ -49,7 +45,9 @@
             <intent-filter>
                 <action android:name="com.exmaple.ChangeNotification.MorningTime" /> 
                 <action android:name="com.exmaple.ChangeNotification.NightTime" />
+                <action android:name="com.exmaple.ChangeNotification.StartTimers" />
                 <action android:name="android.net.conn.CONNECTIVITY_CHANGE" />
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
             </intent-filter> 
     	</receiver>
     </application>

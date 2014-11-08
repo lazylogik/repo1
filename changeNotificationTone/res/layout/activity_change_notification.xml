@@ -9,19 +9,19 @@
     tools:context=".ChangeNotification" >
 
     
-    <ToggleButton 
-    android:id="@+id/button1"
-    android:layout_width="wrap_content"
-    android:layout_height="wrap_content"
-    android:textOn="Stop Service"
-    android:textOff="Start Service"
-    android:onClick="onToggleClicked"/>    
+<!--     <ToggleButton  -->
+<!--     android:id="@+id/button1" -->
+<!--     android:layout_width="wrap_content" -->
+<!--     android:layout_height="wrap_content" -->
+<!--     android:textOn="Stop Service" -->
+<!--     android:textOff="Start Service" -->
+<!--     android:onClick="onToggleClicked"/>     -->
     
-    <Button 
-    android:id="@+id/button2"
-    android:layout_width="wrap_content"
-    android:layout_height="wrap_content"
-    android:text="Wake Service"
-    android:onClick="onWakeClicked"/>
+<!--     <Button  -->
+<!--     android:id="@+id/button2" -->
+<!--     android:layout_width="wrap_content" -->
+<!--     android:layout_height="wrap_content" -->
+<!--     android:text="Wake Service" -->
+<!--     android:onClick="onWakeClicked"/> -->
 
 </LinearLayout>
