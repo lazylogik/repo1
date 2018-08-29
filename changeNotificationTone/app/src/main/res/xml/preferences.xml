@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android" >
+    <RingtonePreference android:persistent="true" android:enabled="true" android:key="pref_tone1" android:title="Morning Notification Tone" android:ringtoneType="notification" android:selectable="true"/>
+    <RingtonePreference android:persistent="true" android:enabled="true" android:key="pref_tone2" android:title="Night Notification Tone" android:ringtoneType="notification" android:selectable="true"/>
+    <lazylogic.changenotificationtone.TimePreference android:key="MorningTime" android:title="Morning Time"/>
+    <lazylogic.changenotificationtone.TimePreference android:key="NightTime" android:title="Night Time"/>
+    <ListPreference android:persistent="true" android:enabled="true" android:key="wiFiSSID" android:title="WIFI SSID"/>
+</PreferenceScreen>
