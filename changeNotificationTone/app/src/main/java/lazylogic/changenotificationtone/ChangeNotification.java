@@ -5,70 +5,37 @@ import android.app.AlertDialog;
 import android.app.Dialog;
 import android.app.DialogFragment;
 import android.app.FragmentManager;
-import android.app.job.JobInfo;
-import android.app.job.JobScheduler;
+import android.content.BroadcastReceiver;
 import android.content.DialogInterface;
 import android.content.pm.PackageManager;
 import android.os.Build;
 import android.provider.Settings;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
-import android.support.v7.app.AppCompatActivity;
+import android.support.v4.content.LocalBroadcastManager;
 import android.os.Bundle;
 
-import android.media.RingtoneManager;
-import android.net.ConnectivityManager;
 import android.net.Uri;
 import android.net.wifi.WifiConfiguration;
 import android.net.wifi.WifiManager;
-import android.os.Bundle;
-import android.os.IBinder;
-import android.os.Message;
-import android.os.Messenger;
-import android.os.RemoteException;
 
 import android.preference.ListPreference;
 import android.preference.PreferenceFragment;
 import android.preference.PreferenceManager;
-import android.app.Activity;
-import android.app.ActivityManager;
-import android.app.ActivityManager.RunningServiceInfo;
-import android.app.AlarmManager;
-import android.app.Notification;
-import android.app.NotificationManager;
-import android.app.PendingIntent;
-import android.app.TaskStackBuilder;
-import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.content.ServiceConnection;
 import android.content.SharedPreferences;
-import android.content.SharedPreferences.OnSharedPreferenceChangeListener;
-import android.support.v4.app.NotificationCompat;
-import android.util.Log;
 import android.view.Menu;
-import android.view.MenuItem;
-import android.view.View;
-import android.widget.Button;
-import android.widget.RemoteViews;
-import android.widget.ToggleButton;
-import java.util.Calendar;
 import java.util.List;
 import java.util.ListIterator;
 
-import android.util.Log;
 
 
 public class ChangeNotification extends Activity {
 
     public CharSequence[] m_listOfwifiSSIDs;
 
-    private AlarmManager m_am;
-    private int mId;
-    private AutoReceiver m_autoReceiver;
-    private PendingIntent morningPi, nightPi;
-    private Intent startTimersPi;
     private SharedPreferences.OnSharedPreferenceChangeListener spChanged;
     private Boolean doWeHaveWriteSettingsPermimssion;
     private Boolean doWeHaveAccessWifiStatePermission;
@@ -173,46 +140,13 @@ public class ChangeNotification extends Activity {
     }
 
 
-    public static final int MY_BACKGROUND_JOB = 0;
-    public void scheduleJob() {
-        ConnectivityManager cm = (ConnectivityManager) getSystemService(CONNECTIVITY_SERVICE);
-        if(cm.isActiveNetworkMetered()) {
-            JobScheduler js =
-                    (JobScheduler) getSystemService(Context.JOB_SCHEDULER_SERVICE);
-            JobInfo job = new JobInfo.Builder(
-                    MY_BACKGROUND_JOB,
-                    new ComponentName(this, WifiChangeService.class))
-                    .setRequiredNetworkType(JobInfo.NETWORK_TYPE_UNMETERED)
-                    .build();
-            js.schedule(job);
-        }
-        else
-        {
-            JobScheduler js =
-                    (JobScheduler) getSystemService(Context.JOB_SCHEDULER_SERVICE);
-            JobInfo job = new JobInfo.Builder(
-                    MY_BACKGROUND_JOB + 1,
-                    new ComponentName(this, WifiChangeService.class))
-                    .setRequiredNetworkType(JobInfo.NETWORK_TYPE_METERED)
-                    .build();
-            js.schedule(job);
-        }
-        /*
-        JobScheduler js =
-                (JobScheduler) getSystemService(Context.JOB_SCHEDULER_SERVICE);
-        JobInfo job = new JobInfo.Builder(
-                MY_BACKGROUND_JOB ,
-                new ComponentName(this, WifiChangeService.class))
-                .setPeriodic(5000, 1000)
-                .setPersisted(true)
-                .build();
-        long minPeriod = job.getMinPeriodMillis();
-        Log.i("Info", "Period is " + Long.toString(minPeriod));
-        int ret = js.schedule(job);
-        if(ret == JobScheduler.RESULT_FAILURE)
-        {
-            Log.e("Error", "Can't Schedule");
-        }*/
+
+    private void sendLocalBroadcast()
+    {
+        Intent startTimersPi;
+        startTimersPi = new Intent();
+        startTimersPi.setAction("lazylogic.changenotificationtone.StartTimers");
+        LocalBroadcastManager.getInstance(this).sendBroadcast(startTimersPi);
     }
 
     @Override
@@ -234,14 +168,6 @@ public class ChangeNotification extends Activity {
             m_listOfwifiSSIDs[count++] = element.SSID;
         }
 
-        m_am = (AlarmManager)(this.getSystemService( Context.ALARM_SERVICE ));
-        morningPi = PendingIntent.getBroadcast( this, 0, new Intent("com.exmaple.ChangeNotification.MorningTime"),
-                0 );
-        nightPi = PendingIntent.getBroadcast( this, 0, new Intent("com.exmaple.ChangeNotification.NightTime"),
-                0 );
-        startTimersPi = new Intent();
-        startTimersPi.setAction("com.exmaple.ChangeNotification.StartTimers");
-
         spChanged = new
                 SharedPreferences.OnSharedPreferenceChangeListener() {
 
@@ -249,7 +175,7 @@ public class ChangeNotification extends Activity {
                     public void onSharedPreferenceChanged(
                             SharedPreferences arg0, String arg1) {
                         // TODO Auto-generated method stub
-                        sendBroadcast(startTimersPi);
+                        sendLocalBroadcast();
 
                     }
 
@@ -259,17 +185,17 @@ public class ChangeNotification extends Activity {
         SettingsFragment fragment = new SettingsFragment();
         fragment.setListofWifi(m_listOfwifiSSIDs);
         getFragmentManager().beginTransaction().replace(android.R.id.content, fragment).commit();
-        scheduleJob();
+        registerBroadcasts();
+        sendLocalBroadcast();
         //PendingIntent.getBroadcast( this, 0, new Intent("com.exmaple.ChangeNotification.StartTimers"),
         //0 );
     }
 
-
-
-    public void onWakeClicked(View view)
+    private void registerBroadcasts()
     {
-        //startTimers();
-        sendBroadcast(startTimersPi);
+        BroadcastReceiver br = new AutoReceiver();
+        IntentFilter filter = new IntentFilter("lazylogic.changenotificationtone.StartTimers");
+        LocalBroadcastManager.getInstance(this).registerReceiver(br, filter);
     }
 
 

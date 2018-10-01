@@ -21,11 +21,11 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <receiver android:name=".AutoReceiver" android:enabled="true">
+        <receiver android:name=".AutoReceiver" android:enabled="true" android:exported="true">
             <intent-filter>
                 <action android:name="com.exmaple.ChangeNotification.MorningTime" />
                 <action android:name="com.exmaple.ChangeNotification.NightTime" />
-                <action android:name="com.exmaple.ChangeNotification.StartTimers" />
+                <action android:name="lazylogic.changenotificationtone.StartTimers" />
                 <action android:name="android.net.conn.CONNECTIVITY_CHANGE" />
                 <action android:name="android.intent.action.BOOT_COMPLETED" />
             </intent-filter>

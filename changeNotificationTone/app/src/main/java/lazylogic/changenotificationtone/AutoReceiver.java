@@ -5,9 +5,13 @@ import java.util.Calendar;
 
 import android.app.AlarmManager;
 import android.app.PendingIntent;
+import android.app.job.JobInfo;
+import android.app.job.JobScheduler;
 import android.content.BroadcastReceiver;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.media.AudioManager;
 import android.media.RingtoneManager;
@@ -20,6 +24,7 @@ import android.preference.PreferenceManager;
 import android.util.Log;
 
 public class AutoReceiver extends BroadcastReceiver {
+
     public Boolean wasConnected;
     public AutoReceiver() {
         wasConnected = false;
@@ -28,12 +33,40 @@ public class AutoReceiver extends BroadcastReceiver {
     private AlarmManager m_am;
     private PendingIntent morningPi, nightPi;
 
+    public static final int MY_BACKGROUND_JOB = 0;
+    public void scheduleJob(Context context) {
+        ConnectivityManager cm = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
+        if(cm.isActiveNetworkMetered()) {
+            JobScheduler js =
+                    (JobScheduler) context.getSystemService(Context.JOB_SCHEDULER_SERVICE);
+            JobInfo job = new JobInfo.Builder(
+                    MY_BACKGROUND_JOB,
+                    new ComponentName(context, WifiChangeService.class))
+                    .setRequiredNetworkType(JobInfo.NETWORK_TYPE_UNMETERED)
+                    .build();
+            js.schedule(job);
+        }
+        else
+        {
+            JobScheduler js =
+                    (JobScheduler) context.getSystemService(Context.JOB_SCHEDULER_SERVICE);
+            JobInfo job = new JobInfo.Builder(
+                    MY_BACKGROUND_JOB + 1,
+                    new ComponentName(context, WifiChangeService.class))
+                    .setRequiredNetworkType(JobInfo.NETWORK_TYPE_METERED)
+                    .build();
+            js.schedule(job);
+        }
+    }
+
     private void startTimers(Context context)
     {
         m_am = (AlarmManager)(context.getSystemService( Context.ALARM_SERVICE ));
-        morningPi = PendingIntent.getBroadcast( context, 0, new Intent("com.exmaple.ChangeNotification.MorningTime"),
+        Intent mi = new Intent("com.exmaple.ChangeNotification.MorningTime").setClass(context, AutoReceiver.class);
+        Intent ni = new Intent("com.exmaple.ChangeNotification.NightTime").setClass(context, AutoReceiver.class);
+        morningPi = PendingIntent.getBroadcast( context, 0, mi,
                 0 );
-        nightPi = PendingIntent.getBroadcast( context, 0, new Intent("com.exmaple.ChangeNotification.NightTime"),
+        nightPi = PendingIntent.getBroadcast( context, 0, ni,
                 0 );
         SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(context);
         String timeNightString = sharedPref.getString("NightTime", "");
@@ -67,10 +100,13 @@ public class AutoReceiver extends BroadcastReceiver {
         }
     }
 
+
+
     @Override
     public void onReceive(Context context, Intent intent) {
         String action = intent.getAction();
-        if (action.equals(Intent.ACTION_BOOT_COMPLETED) || action == "com.exmaple.ChangeNotification.StartTimers"){
+        scheduleJob(context);
+        if (action.equals(Intent.ACTION_BOOT_COMPLETED) || action == "lazylogic.changenotificationtone.StartTimers"){
             startTimers(context);
         }
         if(action == ConnectivityManager.CONNECTIVITY_ACTION)
@@ -106,8 +142,6 @@ public class AutoReceiver extends BroadcastReceiver {
                     editor.putBoolean("silentMode", false);
                     editor.commit();
                 }
-
-
             }
             Log.i("wifiInfo1", wifiInfo.toString());
             Log.i("SSID1",wifiInfo.getSSID());
@@ -152,4 +186,3 @@ public class AutoReceiver extends BroadcastReceiver {
         }
     }
 }
-//Test Comment
